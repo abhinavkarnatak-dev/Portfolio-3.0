@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+@theme {
+  /* Ink & Amber - Brutalist Edition. Dark base, amber identity, lime + blue
+     + alarm-red as the loud secondary voices. Hard edges, hard shadows. */
+  --color-background: #0c0c0d;
+  --color-surface: #141416;
+  --color-line: #26262b;
+  --color-foreground: #ededef;
+  --color-muted: #9c9ca4;
+  --color-faint: #7c7c85; /* smallest text color - keep >= 4.5:1 on background (AA) */
+  --color-accent: #ffb224;
+  --color-lime: #c6f24e;
+  --color-pop: #5468ff; /* electric blue - offset shadows */
+  --color-alarm: #ff4d2e; /* red-orange - tiny glyphs and bug labels only */
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
+  --font-display: var(--font-anton), Impact, "Arial Narrow Bold", sans-serif;
+
+  /* Display scale: mega for the hero name, display for page titles,
+     heading for section headlines. Anton is condensed - tight leading. */
+  --text-mega: clamp(3.25rem, 1.25rem + 10vw, 8.75rem);
+  --text-mega--line-height: 0.94;
+  --text-mega--letter-spacing: 0.01em;
+  --text-display: clamp(2.5rem, 1.5rem + 4.5vw, 4.75rem);
+  --text-display--line-height: 0.98;
+  --text-display--letter-spacing: 0.01em;
+  --text-heading: clamp(2.125rem, 1.4rem + 3vw, 3.5rem);
+  --text-heading--line-height: 1.02;
+  --text-heading--letter-spacing: 0.01em;
+
+  /* Hard offset shadows - color set per-use via shadow-<color>. */
+  --shadow-hard-sm: 4px 4px 0 0 #ffb224;
+  --shadow-hard: 7px 7px 0 0 #ffb224;
+  --shadow-hard-lg: 10px 10px 0 0 #ffb224;
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --tracking-caps: 0.2em;
+
+  /* Layout containers: reading column + the wider projects grid. */
+  --container-content: 45rem;
+  --container-wide: 66rem;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  /* Faint blueprint grid across the whole canvas. */
+  body {
+    @apply font-sans text-base;
+    background-image:
+      linear-gradient(to right, color-mix(in srgb, #ededef 3.5%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in srgb, #ededef 3.5%, transparent) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-background);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+}
+
+/* Hollow display type - the second voice of the big headlines. */
+@utility text-outline {
+  -webkit-text-stroke: 2px var(--color-foreground);
+  color: transparent;
+}
+
+@utility text-outline-accent {
+  -webkit-text-stroke: 2px var(--color-accent);
+  color: transparent;
+}
+
+/* Static marker highlight (hero + inside word reveals). */
+@utility marker {
+  background-color: var(--color-accent);
+  color: var(--color-background);
+  padding-inline: 0.14em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+@utility marker-lime {
+  background-color: var(--color-lime);
+  color: var(--color-background);
+  padding-inline: 0.14em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Infinite ticker - the track holds two identical halves, shifts by one half. */
+@utility marquee-track {
+  animation: marquee 36s linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/*
+ * Hero load sequence - CSS instead of JS so the largest paint never waits on
+ * hydration. Stagger via --hero-stage set per element.
+ */
+@utility hero-enter {
+  animation: hero-enter 0.55s var(--ease-out-quint) both;
+  animation-delay: calc(var(--hero-stage, 0) * 90ms);
+
+  @media (prefers-reduced-motion: reduce) {
+    animation-name: hero-enter-fade;
+  }
+}
+
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hero-enter-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
