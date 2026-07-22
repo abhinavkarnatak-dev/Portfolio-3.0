@@ -3,13 +3,18 @@
  * so it costs nothing on the main thread and freezes under reduced motion.
  * Decorative - hidden from assistive tech.
  */
+const dotColors = ["bg-accent", "bg-pop", "bg-lime", "bg-alarm", "bg-violet"] as const;
+
 export function Marquee({ items }: { items: string[] }) {
   const half = (
     <span className="flex shrink-0 items-center">
-      {items.map((item) => (
+      {items.map((item, i) => (
         <span key={item} className="flex items-center">
           <span className="px-5">{item}</span>
-          <span aria-hidden="true" className="size-1.5 shrink-0 bg-accent" />
+          <span
+            aria-hidden="true"
+            className={`size-1.5 shrink-0 ${dotColors[i % dotColors.length]}`}
+          />
         </span>
       ))}
     </span>

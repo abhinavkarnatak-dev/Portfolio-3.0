@@ -1,10 +1,10 @@
 import { site } from "@/data/site";
 
 const footerLinks = [
-  { label: "Journey", href: "/journey" },
-  { label: "GitHub", href: site.socials.github },
-  { label: "LinkedIn", href: site.socials.linkedin },
-  { label: "Email", href: `mailto:${site.email}` },
+  { label: "GitHub", href: site.socials.github, hover: "hover:text-accent" },
+  { label: "LinkedIn", href: site.socials.linkedin, hover: "hover:text-pop" },
+  { label: "Twitter", href: site.socials.twitter, hover: "hover:text-lime" },
+  { label: "Email", href: `mailto:${site.email}`, hover: "hover:text-alarm" },
 ];
 
 export function Footer() {
@@ -26,11 +26,11 @@ export function Footer() {
           Built with Next.js + Claude Design
         </p>
         <ul className="flex flex-wrap items-center gap-6">
-          {footerLinks.map(({ label, href }) => (
+          {footerLinks.map(({ label, href, hover }) => (
             <li key={label}>
               <a
                 href={href}
-                className="font-mono text-xs tracking-wide text-muted uppercase transition-colors duration-200 hover:text-accent"
+                className={`font-mono text-xs tracking-wide text-muted uppercase transition-colors duration-200 ${hover}`}
                 {...(href.startsWith("mailto:") || href.startsWith("/")
                   ? {}
                   : { target: "_blank", rel: "noopener noreferrer" })}

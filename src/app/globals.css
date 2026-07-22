@@ -2,7 +2,7 @@
 
 @theme {
   /* Ink & Amber - Brutalist Edition. Dark base, amber identity, lime + blue
-     + alarm-red as the loud secondary voices. Hard edges, hard shadows. */
+     + alarm-red + violet as the loud secondary voices. Hard edges, hard shadows. */
   --color-background: #0c0c0d;
   --color-surface: #141416;
   --color-line: #26262b;
@@ -13,6 +13,7 @@
   --color-lime: #c6f24e;
   --color-pop: #5468ff; /* electric blue - offset shadows */
   --color-alarm: #ff4d2e; /* red-orange - tiny glyphs and bug labels only */
+  --color-violet: #9d5cff; /* electric purple - rounds out the loud-color cycle */
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
@@ -51,6 +52,11 @@
 
   html {
     @apply bg-background text-foreground antialiased;
+    /* The journey page drives a scroll-scrubbed animation off raw scrollY; browser
+       scroll anchoring fights our reset-to-top-on-mount as that page's tall content
+       mounts, landing on a random stop instead of HDW. No page here relies on
+       anchoring, so it's off everywhere. */
+    overflow-anchor: none;
   }
 
   /* Faint blueprint grid across the whole canvas. */
@@ -90,17 +96,38 @@
   color: transparent;
 }
 
-/* Static marker highlight (hero + inside word reveals). */
-@utility marker {
+/* Static marker highlight (hero + inside word reveals) - one variant per loud
+   accent so headline emphasis cycles through the palette instead of always amber. */
+@utility marker-accent {
   background-color: var(--color-accent);
   color: var(--color-background);
   padding-inline: 0.14em;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
-
 @utility marker-lime {
   background-color: var(--color-lime);
+  color: var(--color-background);
+  padding-inline: 0.14em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+@utility marker-pop {
+  background-color: var(--color-pop);
+  color: var(--color-background);
+  padding-inline: 0.14em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+@utility marker-alarm {
+  background-color: var(--color-alarm);
+  color: var(--color-background);
+  padding-inline: 0.14em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+@utility marker-violet {
+  background-color: var(--color-violet);
   color: var(--color-background);
   padding-inline: 0.14em;
   box-decoration-break: clone;

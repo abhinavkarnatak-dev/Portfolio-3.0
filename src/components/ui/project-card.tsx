@@ -1,9 +1,28 @@
 import Link from "next/link";
 import type { Project } from "@/data/types";
 
-/* Hard shadows (and the giant background numeral) cycle through the three loud colors, card by card. */
-export const cardShadows = ["shadow-accent", "shadow-pop", "shadow-lime"] as const;
-const cardNumberColors = ["text-accent", "text-pop", "text-lime"] as const;
+/* Hard shadows (and the giant background numeral) cycle through the five loud colors, card by card. */
+export const cardShadows = [
+  "shadow-accent",
+  "shadow-pop",
+  "shadow-lime",
+  "shadow-alarm",
+  "shadow-violet",
+] as const;
+const cardNumberColors = [
+  "text-accent",
+  "text-pop",
+  "text-lime",
+  "text-alarm",
+  "text-violet",
+] as const;
+const cardLinkHovers = [
+  "hover:text-accent",
+  "hover:text-pop",
+  "hover:text-lime",
+  "hover:text-alarm",
+  "hover:text-violet",
+] as const;
 
 export function ProjectCard({
   project,
@@ -16,6 +35,7 @@ export function ProjectCard({
 }) {
   const shadow = cardShadows[index % cardShadows.length];
   const numberColor = cardNumberColors[index % cardNumberColors.length];
+  const linkHover = cardLinkHovers[index % cardLinkHovers.length];
 
   return (
     <article
@@ -70,7 +90,7 @@ export function ProjectCard({
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="relative z-10 text-muted transition-colors duration-200 hover:text-accent"
+            className={`relative z-10 text-muted transition-colors duration-200 ${linkHover}`}
           >
             {label} <span aria-hidden="true">↗</span>
           </a>

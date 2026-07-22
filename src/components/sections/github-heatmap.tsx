@@ -61,9 +61,9 @@ export async function GithubHeatmap() {
   return (
     <section id="github" className="scroll-mt-14">
       <div className="mx-auto max-w-wide px-6 py-24">
-        <SectionMeta index="03" title="Shipping" />
+        <SectionMeta index="03" title="Shipping" accent="lime" />
         <WordReveal
-          words={[{ t: "STILL" }, { t: "COMMITTING" }, { t: "AT" }, { t: "MIDNIGHT.", mark: true }]}
+          words={[{ t: "STILL" }, { t: "COMMITTING" }, { t: "AT" }, { t: "MIDNIGHT.", mark: "lime" }]}
           className="mt-8 font-display text-heading text-foreground uppercase"
         />
 
@@ -73,8 +73,8 @@ export async function GithubHeatmap() {
               <>
                 <div className="flex flex-wrap items-end gap-x-10 gap-y-4 border-b border-foreground/15 pb-6">
                   <div>
-                    <div className="font-display text-4xl text-foreground">
-                      <AnimatedCounter value={total} /> +
+                    <div className="font-display text-4xl text-lime">
+                      <AnimatedCounter value={total} />+
                     </div>
                     <div className="mt-1.5 font-mono text-[11px] tracking-caps text-faint uppercase">
                       Contributions / last year
@@ -82,8 +82,8 @@ export async function GithubHeatmap() {
                   </div>
                   {topMonth && (
                     <div>
-                      <div className="font-display text-4xl text-lime">
-                        <AnimatedCounter value={topMonth.count} /> +
+                      <div className="font-display text-4xl text-violet">
+                        <AnimatedCounter value={topMonth.count} />+
                       </div>
                       <div className="mt-1.5 font-mono text-[11px] tracking-caps text-faint uppercase">
                         Most active - {topMonth.label}

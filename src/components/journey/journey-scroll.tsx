@@ -8,7 +8,7 @@ import {
   useSpring,
   useTransform,
 } from "motion/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { journeyStops, type JourneyStop } from "@/data/journey";
 
 // Matches --color-accent / --color-line in globals.css (motion animates raw values).
@@ -206,6 +206,20 @@ export function JourneyScroll() {
     setActiveIndex(Math.min(journeyStops.length - 1, Math.round(v * (journeyStops.length - 1))));
   });
   const nextStop = journeyStops[activeIndex + 1];
+
+  // The scroll-scrub position is driven purely by window.scrollY, so a stale scroll
+  // position left over from history/bfcache restoration (or the previous page's own
+  // scroll depth) makes this open mid- or end-of-journey instead of at HDW. Force it
+  // back to the top on every mount and stop the browser from re-restoring it later.
+  useEffect(() => {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+    // Instant, not smooth - the CSS `scroll-behavior: smooth` on <html> would otherwise
+    // animate this reset, and a mid-flight layout shift (this page's content mounting)
+    // can leave it short of 0.
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, []);
 
   if (reducedMotion) {
     return (

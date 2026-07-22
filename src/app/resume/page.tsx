@@ -39,7 +39,7 @@ export default function ResumePage() {
           </ButtonLink>
         </div>
 
-        <div className="mt-10 overflow-hidden border border-foreground/25 shadow-hard shadow-accent">
+        <div className="mt-10 overflow-hidden border border-foreground/25 shadow-hard shadow-pop">
           <object
             data={site.resumePdf}
             type="application/pdf"
@@ -51,7 +51,7 @@ export default function ResumePage() {
               <a
                 href={site.resumePdf}
                 download
-                className="text-foreground underline decoration-line underline-offset-4 hover:decoration-accent"
+                className="text-foreground underline decoration-line underline-offset-4 hover:decoration-pop"
               >
                 download the resume
               </a>{" "}

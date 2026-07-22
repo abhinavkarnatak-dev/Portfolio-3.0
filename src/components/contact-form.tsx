@@ -29,6 +29,9 @@ function ContactFormInstance({ onSendAnother }: { onSendAnother: () => void }) {
   const [clientErrors, setClientErrors] = useState<
     Partial<Record<ContactFieldName, string | undefined>>
   >({});
+  // Only tracked to gate the submit button - the inputs stay uncontrolled.
+  const [values, setValues] = useState({ name: "", email: "", message: "" });
+  const allEmpty = Object.values(values).every((v) => v.trim() === "");
 
   if (state.status === "success") {
     return (
@@ -56,6 +59,10 @@ function ContactFormInstance({ onSendAnother }: { onSendAnother: () => void }) {
 
   const errorFor = (field: ContactFieldName) => clientErrors[field] ?? state.fieldErrors?.[field];
 
+  const handleChange = (field: ContactFieldName) => (e: React.ChangeEvent<HTMLElement>) => {
+    setValues((prev) => ({ ...prev, [field]: (e.target as HTMLInputElement).value }));
+  };
+
   const handleBlur = (field: ContactFieldName) => (e: React.FocusEvent<HTMLElement>) => {
     const value = (e.target as HTMLInputElement | HTMLTextAreaElement).value;
     // Only surface errors on blur once the user has typed something.
@@ -65,10 +72,34 @@ function ContactFormInstance({ onSendAnother }: { onSendAnother: () => void }) {
     }));
   };
 
+  // Full-schema check before the request ever goes out - a format issue (bad email,
+  // too-short message, etc.) shows inline instead of round-tripping to the server
+  // action just to learn what it would have said.
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const formData = new FormData(e.currentTarget);
+    const parsed = contactSchema.safeParse({
+      name: formData.get("name"),
+      email: formData.get("email"),
+      message: formData.get("message"),
+    });
+    if (!parsed.success) {
+      e.preventDefault();
+      const errors: Partial<Record<ContactFieldName, string>> = {};
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0];
+        if (typeof field === "string" && !(field in errors)) {
+          errors[field as ContactFieldName] = issue.message;
+        }
+      }
+      setClientErrors(errors);
+    }
+  };
+
   const fieldProps = (field: ContactFieldName) => ({
     id: field,
     name: field,
     required: true,
+    onChange: handleChange(field),
     onBlur: handleBlur(field),
     "aria-invalid": errorFor(field) ? true : undefined,
     "aria-describedby": errorFor(field) ? `${field}-error` : undefined,
@@ -142,7 +173,7 @@ function ContactFormInstance({ onSendAnother }: { onSendAnother: () => void }) {
       <button
         type="submit"
         disabled={isPending}
-        className="inline-flex cursor-pointer items-center gap-2.5 bg-accent px-6 py-3 font-mono text-sm font-semibold tracking-wide text-background uppercase shadow-hard-sm shadow-foreground transition duration-200 ease-out-quint hover:translate-x-1 hover:translate-y-1 hover:shadow-none disabled:translate-x-0 disabled:translate-y-0 disabled:opacity-60"
+        className="inline-flex cursor-pointer items-center gap-2.5 bg-lime px-6 py-3 font-mono text-sm font-semibold tracking-wide text-background uppercase shadow-hard-sm shadow-foreground transition duration-200 ease-out-quint hover:translate-x-1 hover:translate-y-1 hover:shadow-none disabled:translate-x-0 disabled:translate-y-0 disabled:opacity-60"
       >
         {isPending ? "Sending…" : "Send message →"}
       </button>

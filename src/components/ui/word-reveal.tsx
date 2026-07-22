@@ -6,13 +6,24 @@ const easeOutQuint = [0.22, 1, 0.36, 1] as const;
 
 export type RevealWord = {
   t: string;
-  /** Render this word as an amber marker highlight. */
-  mark?: boolean;
+  /** Render this word as a marker highlight in one of the five loud accents. */
+  mark?: "accent" | "lime" | "pop" | "alarm" | "violet";
   /** Render this word as hollow outline type. */
   outline?: boolean;
 };
 
 const motionTags = { h1: motion.h1, h2: motion.h2, h3: motion.h3, p: motion.p } as const;
+
+/* Full literal class names, not built by concatenation - Tailwind's scanner only
+   compiles a utility it can see as a complete token somewhere in source, and
+   `marker-${item.mark}` never produces one. */
+const markerClasses = {
+  accent: "marker-accent",
+  lime: "marker-lime",
+  pop: "marker-pop",
+  alarm: "marker-alarm",
+  violet: "marker-violet",
+} as const;
 
 /**
  * Big-headline entrance: each word rises out of its own clipping box,
@@ -60,7 +71,7 @@ export function WordReveal({
           <span className="inline-block overflow-hidden pb-[0.08em] align-bottom">
             <motion.span
               variants={word}
-              className={`inline-block ${item.mark ? "marker" : ""} ${item.outline ? "text-outline" : ""}`}
+              className={`inline-block ${item.mark ? markerClasses[item.mark] : ""} ${item.outline ? "text-outline" : ""}`}
             >
               {item.t}
             </motion.span>

@@ -47,11 +47,11 @@ export default function JourneyPage() {
       <div className="mx-auto max-w-wide px-6 py-20 text-center">
         <p className="font-mono text-xs tracking-caps text-faint uppercase">■ End of log</p>
         <h2 className="mt-4 font-display text-heading text-foreground uppercase">
-          Boarding for the <span className="marker">next</span> one.
+          Boarding for the <span className="marker-pop">next</span> one.
         </h2>
         <SectionLink
           id="contact"
-          className="mt-8 inline-flex items-center gap-2 bg-accent px-5 py-2.5 font-mono text-sm font-semibold tracking-wide text-background uppercase shadow-hard-sm shadow-foreground transition duration-200 ease-out-quint hover:translate-x-0.75 hover:translate-y-0.75 hover:shadow-none"
+          className="mt-8 inline-flex items-center gap-2 bg-pop px-5 py-2.5 font-mono text-sm font-semibold tracking-wide text-background uppercase shadow-hard-sm shadow-foreground transition duration-200 ease-out-quint hover:translate-x-0.75 hover:translate-y-0.75 hover:shadow-none"
         >
           Let&apos;s talk
           <span aria-hidden="true">→</span>

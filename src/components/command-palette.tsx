@@ -133,11 +133,11 @@ export function CommandPalette() {
             initial={{ y: reducedMotion ? 0 : 14, scale: reducedMotion ? 1 : 0.98 }}
             animate={{ y: 0, scale: 1 }}
             transition={{ duration: 0.22, ease: easeOutQuint }}
-            className="w-full max-w-lg border border-foreground/80 bg-surface shadow-hard shadow-accent"
+            className="w-full max-w-lg border border-foreground/80 bg-surface shadow-hard shadow-pop"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-3 border-b border-foreground/15 px-4">
-              <span aria-hidden="true" className="font-mono text-sm text-accent">
+              <span aria-hidden="true" className="font-mono text-sm text-pop">
                 ❯
               </span>
               <input
@@ -171,7 +171,7 @@ export function CommandPalette() {
                     onMouseEnter={() => setActiveIndex(i)}
                     className={`flex w-full cursor-pointer items-baseline justify-between gap-4 px-4 py-2.5 text-left font-mono text-sm transition-colors ${
                       i === activeIndex
-                        ? "bg-accent text-background"
+                        ? "bg-pop text-background"
                         : "text-muted hover:text-foreground"
                     }`}
                   >

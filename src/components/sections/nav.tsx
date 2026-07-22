@@ -1,10 +1,11 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { SectionLink } from "@/components/ui/section-link";
+import { accentBg, accentGroupHoverText, accentText, sectionAccents } from "@/lib/section-colors";
 import { site } from "@/data/site";
 
 const sections = [
@@ -26,6 +27,10 @@ export function Nav() {
   const [active, setActive] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const reducedMotion = useReducedMotion();
+
+  // How far down the page the visitor has scrolled - a thin accent beam on the navbar.
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 200, damping: 30, restDelta: 0.001 });
 
   // Scroll-spy: track which section occupies the middle band of the viewport
   // and keep the URL in sync (clean paths, no hash).
@@ -65,6 +70,11 @@ export function Nav() {
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-foreground/15 bg-background/90 backdrop-blur-sm">
+        <motion.div
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-[3px] origin-left bg-accent"
+          style={{ scaleX }}
+        />
         <nav
           aria-label="Main"
           className="mx-auto flex h-14 max-w-wide items-center justify-between px-6"
@@ -78,6 +88,7 @@ export function Nav() {
                 e.preventDefault();
                 window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
               }
+              setMenuOpen(false)
             }}
             className="font-display text-xl tracking-wide text-foreground uppercase transition-colors hover:text-accent"
             aria-label={`${site.name} - home`}
@@ -99,7 +110,7 @@ export function Nav() {
                     {label}
                     <span
                       aria-hidden="true"
-                      className={`absolute -bottom-1.5 left-0 h-0.5 bg-accent transition-all duration-300 ease-out-quint ${
+                      className={`absolute -bottom-1.5 left-0 h-0.5 ${accentBg[sectionAccents[id] ?? "accent"]} transition-all duration-300 ease-out-quint ${
                         isActive ? "w-full" : "w-0"
                       }`}
                     />
@@ -176,10 +187,15 @@ export function Nav() {
                     onNavigate={() => setMenuOpen(false)}
                     className="group flex items-baseline gap-4 py-2"
                   >
-                    <span aria-hidden="true" className="font-mono text-sm text-accent">
+                    <span
+                      aria-hidden="true"
+                      className={`font-mono text-sm ${accentText[sectionAccents[id] ?? "accent"]}`}
+                    >
                       0{i + 1}
                     </span>
-                    <span className="font-display text-heading text-foreground uppercase transition-colors group-hover:text-accent">
+                    <span
+                      className={`font-display text-heading text-foreground uppercase transition-colors ${accentGroupHoverText[sectionAccents[id] ?? "accent"]}`}
+                    >
                       {label}
                     </span>
                   </SectionLink>

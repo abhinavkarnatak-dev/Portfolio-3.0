@@ -14,7 +14,7 @@ import { education, experience } from "@/data/experience";
 const easeOutQuint = [0.22, 1, 0.36, 1] as const;
 
 // Matches --color-accent / --color-line in globals.css (motion animates raw values).
-const ACCENT = "#ffb224";
+const LIME = "#c6f24e";
 const LINE = "#26262b";
 
 /**
@@ -45,11 +45,11 @@ function TimelineItem({ children }: { children: ReactNode }) {
         className="absolute top-2 left-0 size-2 -translate-x-1/2"
         animate={
           reducedMotion
-            ? { backgroundColor: ACCENT, scale: 1, boxShadow: "none" }
+            ? { backgroundColor: LIME, scale: 1, boxShadow: "none" }
             : {
-                backgroundColor: active ? ACCENT : LINE,
+                backgroundColor: active ? LIME : LINE,
                 scale: active ? 1.6 : 1,
-                boxShadow: active ? `0 0 12px 2px ${ACCENT}66` : `0 0 0px 0px ${ACCENT}00`,
+                boxShadow: active ? `0 0 12px 2px ${LIME}66` : `0 0 0px 0px ${LIME}00`,
               }
         }
         transition={{ duration: 0.4, ease: easeOutQuint }}
@@ -115,13 +115,13 @@ export function ExperienceTimeline() {
         >
           {/* Beam: draws down the track in sync with scroll */}
           <motion.div
-            className="absolute inset-0 w-px origin-top bg-linear-to-b from-accent/30 to-accent"
+            className="absolute inset-0 w-px origin-top bg-linear-to-b from-lime/30 to-lime"
             style={{ scaleY: progress }}
           />
           {/* Glowing head */}
           <motion.div
-            className="absolute left-0 size-2.5 -translate-x-1/2 -translate-y-1/2 bg-accent"
-            style={{ top: headTop, boxShadow: `0 0 14px 3px ${ACCENT}59` }}
+            className="absolute left-0 size-2.5 -translate-x-1/2 -translate-y-1/2 bg-lime"
+            style={{ top: headTop, boxShadow: `0 0 14px 3px ${LIME}59` }}
           />
         </div>
       )}

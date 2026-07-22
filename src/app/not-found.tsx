@@ -15,7 +15,7 @@ export default function NotFound() {
           Error 404
         </p>
         <h1 className="mt-8 font-display text-display text-foreground uppercase">
-          Nothing <span className="marker">here.</span>
+          Nothing <span className="marker-alarm">here.</span>
         </h1>
         <p className="mt-5 max-w-md text-muted">
           This page doesn&apos;t exist - it may have moved, or the link was wrong from the start.

@@ -3,17 +3,25 @@ import { SectionMeta } from "@/components/ui/section-meta";
 import { WordReveal } from "@/components/ui/word-reveal";
 import { skillGroups } from "@/data/skills";
 
+const groupLabelColors = [
+  "text-accent",
+  "text-lime",
+  "text-pop",
+  "text-alarm",
+  "text-violet",
+] as const;
+
 export function Skills() {
   return (
     <section id="skills" className="scroll-mt-14">
       <div className="mx-auto max-w-wide px-6 py-24">
-        <SectionMeta index="02" title="Stack" meta={`${skillGroups.length} groups`} />
+        <SectionMeta index="02" title="Stack" meta={`${skillGroups.length} groups`} accent="pop" />
         <WordReveal
           words={[
             { t: "TOOLS" },
             { t: "I" },
             { t: "ACTUALLY" },
-            { t: "SHIP", mark: true },
+            { t: "SHIP", mark: "pop" },
             { t: "WITH." },
           ]}
           className="mt-8 font-display text-heading text-foreground uppercase"
@@ -23,7 +31,9 @@ export function Skills() {
           {skillGroups.map(({ label, skills }, i) => (
             <Reveal key={label} delay={(i % 3) * 0.07} className="h-full">
               <div className="h-full border border-foreground/25 bg-surface p-5">
-                <dt className="flex items-center gap-2.5 font-mono text-xs tracking-caps text-accent uppercase">
+                <dt
+                  className={`flex items-center gap-2.5 font-mono text-xs tracking-caps uppercase ${groupLabelColors[i % groupLabelColors.length]}`}
+                >
                   <span aria-hidden="true" className="text-faint">
                     {String(i + 1).padStart(2, "0")} /
                   </span>

@@ -37,11 +37,30 @@ export async function generateMetadata({
   };
 }
 
+/* Cycles the five loud accents, in this fixed order, across a case study's numbered
+   headings, its stack labels and its tag pills instead of always amber. */
+const sectionText = [
+  "text-accent",
+  "text-pop",
+  "text-lime",
+  "text-alarm",
+  "text-violet",
+] as const;
+const sectionBg = ["bg-accent", "bg-pop", "bg-lime", "bg-alarm", "bg-violet"] as const;
+
+function sectionColor(index: string) {
+  const n = Number.parseInt(index, 10) || 1;
+  return (n - 1 + sectionText.length) % sectionText.length;
+}
+
 /** Numbered mono-slug + Anton title - the case-study echo of SectionMeta. */
 function CaseHeading({ index, title }: { index: string; title: string }) {
   return (
     <h2 className="flex items-baseline gap-3 border-b border-foreground/15 pb-3 font-display text-2xl text-foreground uppercase sm:text-3xl">
-      <span aria-hidden="true" className="font-mono text-sm font-semibold text-accent">
+      <span
+        aria-hidden="true"
+        className={`font-mono text-sm font-semibold ${sectionText[sectionColor(index)]}`}
+      >
         {index} /
       </span>
       {title}
@@ -92,10 +111,10 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
           </div>
           <p className="mt-5 max-w-xl text-lg text-muted">{project.oneLiner}</p>
           <ul className="mt-6 flex flex-wrap gap-2">
-            {project.tags.map((tag) => (
+            {project.tags.map((tag, i) => (
               <li
                 key={tag}
-                className="border border-line px-2 py-0.5 font-mono text-[11px] text-muted uppercase"
+                className={`border border-line px-2 py-0.5 font-mono text-[11px] uppercase ${sectionText[i % sectionText.length]}`}
               >
                 {tag}
               </li>
@@ -173,11 +192,17 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
           )}
 
           <section>
-            <CaseHeading index={caseStudy.hardProblems.length > 0 ? "05" : "04"} title="Results" />
+            <CaseHeading
+              index={caseStudy.hardProblems.length > 0 ? "05" : "04"}
+              title="Results"
+            />
             <ul className="mt-6 space-y-3">
-              {caseStudy.results.map((result) => (
+              {caseStudy.results.map((result, i) => (
                 <li key={result} className="flex gap-3 leading-relaxed text-muted">
-                  <span aria-hidden="true" className="mt-2 size-1.5 shrink-0 bg-accent" />
+                  <span
+                    aria-hidden="true"
+                    className={`mt-2 size-1.5 shrink-0 ${sectionBg[i % sectionBg.length]}`}
+                  />
                   {result}
                 </li>
               ))}
@@ -187,9 +212,13 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
           <section>
             <CaseHeading index={caseStudy.hardProblems.length > 0 ? "06" : "05"} title="Stack" />
             <dl className="mt-8 grid gap-x-12 gap-y-6 sm:grid-cols-2">
-              {caseStudy.stack.map(({ group, items }) => (
+              {caseStudy.stack.map(({ group, items }, i) => (
                 <div key={group}>
-                  <dt className="font-mono text-xs tracking-caps text-accent uppercase">{group}</dt>
+                  <dt
+                    className={`font-mono text-xs tracking-caps uppercase ${sectionText[i % sectionText.length]}`}
+                  >
+                    {group}
+                  </dt>
                   <dd className="mt-2 text-muted">{items.join(" · ")}</dd>
                 </div>
               ))}

@@ -14,7 +14,7 @@ export const experience: ExperienceItem[] = [
   {
     org: "HERE Technologies · Remote",
     role: "Data Engineer Intern",
-    period: "Jun - Jul 2024",
+    period: "Jun 2024 - Jul 2024",
     bullets: [
       "Built custom Python web crawlers with Scrapy to scrape store locations from retail websites with wildly different HTML layouts.",
       "Scheduled automated spiders to collect data in the background, cutting manual effort by ~30% of operational time.",

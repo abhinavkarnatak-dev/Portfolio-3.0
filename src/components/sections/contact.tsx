@@ -9,9 +9,9 @@ export function Contact() {
   return (
     <section id="contact" className="scroll-mt-14">
       <div className="mx-auto max-w-content px-6 py-24">
-        <SectionMeta index="05" title="Contact" meta="Replies fast" />
+        <SectionMeta index="05" title="Contact" meta="Replies fast" accent="violet" />
         <WordReveal
-          words={[{ t: "LET'S" }, { t: "BUILD", mark: true }, { t: "SOMETHING." }]}
+          words={[{ t: "LET'S" }, { t: "BUILD", mark: "violet" }, { t: "SOMETHING." }]}
           className="mt-8 font-display text-heading text-foreground uppercase"
         />
         <Reveal>
@@ -20,7 +20,7 @@ export function Contact() {
             a message here, or email me directly at{" "}
             <a
               href={`mailto:${site.email}`}
-              className="text-foreground underline decoration-accent underline-offset-4 transition-colors hover:text-accent"
+              className="text-foreground underline decoration-violet underline-offset-4 transition-colors hover:text-violet"
             >
               {site.email}
             </a>

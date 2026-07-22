@@ -19,6 +19,7 @@ export const site = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.abhinavkarnatak.com",
   email: "abhinavkarnatak2004@gmail.com",
   socials: {
+    twitter: "https://x.com/AbhinavK_Dev",
     github: "https://github.com/abhinavkarnatak-dev",
     linkedin: "https://www.linkedin.com/in/abhinavkarnatak/",
   },

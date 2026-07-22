@@ -37,7 +37,7 @@ export function Hero() {
             className="hero-enter mt-7 max-w-xl text-lg leading-relaxed text-muted sm:text-xl"
             style={stage(2)}
           >
-            {site.hero.lead} <span className="marker font-semibold">{site.hero.accent}</span>{" "}
+            {site.hero.lead} <span className="marker-accent font-semibold">{site.hero.accent}</span>{" "}
             {site.hero.tail} And keeping them alive in production.
           </p>
 
@@ -66,7 +66,8 @@ export function Hero() {
         </div>
 
         {/* Portrait: hard frame, solid amber offset shadow, sticky-note label.
-            Monochrome at rest, full color on hover. */}
+            Monochrome-then-hover is a `sm:`-and-up trick only - below that there's
+            no hover to reveal it, so mobile just gets full color by default. */}
         {/* Shadow lives on the wrapper: the image's grayscale filter would
             otherwise desaturate its own box-shadow. */}
         <div
@@ -80,7 +81,7 @@ export function Hero() {
             height={448}
             priority
             sizes="(max-width: 640px) 176px, 256px"
-            className="size-48 border-2 border-foreground object-cover grayscale transition duration-500 ease-out-quint hover:grayscale-0 sm:size-72"
+            className="size-48 border-2 border-foreground object-cover transition duration-500 ease-out-quint sm:size-72 sm:grayscale sm:hover:grayscale-0"
           />
           <StickyNote className="absolute -bottom-4 -left-3 -rotate-3">~ ships at 2am</StickyNote>
         </div>

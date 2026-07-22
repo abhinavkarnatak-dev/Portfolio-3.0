@@ -12,14 +12,15 @@ export function Projects() {
           index="01"
           title="Selected work"
           meta={`${String(projects.length).padStart(2, "0")} case studies`}
+          accent="alarm"
         />
         <WordReveal
           words={[
             { t: "BUILT." },
             { t: "SHIPPED." },
-            { t: "DEBUGGED", mark: true },
-            { t: "AT", mark: true },
-            { t: "2AM.", mark: true },
+            { t: "DEBUGGED", mark: "alarm" },
+            { t: "AT", mark: "alarm" },
+            { t: "2AM.", mark: "alarm" },
           ]}
           className="mt-8 font-display text-heading text-foreground uppercase"
         />
