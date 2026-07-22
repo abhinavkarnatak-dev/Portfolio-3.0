@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
 import { ButtonLink, buttonVariants } from "@/components/ui/button-link";
+import { FlipWords } from "@/components/ui/flip-words";
 import { SectionLink } from "@/components/ui/section-link";
 import { StickyNote } from "@/components/ui/sticky-note";
 import { site } from "@/data/site";
@@ -37,7 +38,7 @@ export function Hero() {
             className="hero-enter mt-7 max-w-xl text-lg leading-relaxed text-muted sm:text-xl"
             style={stage(2)}
           >
-            {site.hero.lead} <span className="marker-accent font-semibold">{site.hero.accent}</span>{" "}
+            {site.hero.lead} <FlipWords words={[...site.hero.accentWords]} />{" "}
             {site.hero.tail} And keeping them alive in production.
           </p>
 

@@ -8,6 +8,9 @@ export const site = {
   hero: {
     lead: "Full-stack engineer building",
     accent: "AI-native",
+    /** Cycled by the live hero's FlipWords effect - `accent` above is the static
+        first frame, used as-is for the (unanimated) OG image render. */
+    accentWords: ["AI-native", "scalable", "production-ready", "reliable"],
     tail: "products.",
   },
   tagline: "Next.js · Node · LangChain/LangGraph · AWS",

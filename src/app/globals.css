@@ -136,7 +136,7 @@
 
 /* Infinite ticker - the track holds two identical halves, shifts by one half. */
 @utility marquee-track {
-  animation: marquee 36s linear infinite;
+  animation: marquee 20s linear infinite;
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;
