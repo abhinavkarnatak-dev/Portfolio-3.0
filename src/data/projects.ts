@@ -136,7 +136,7 @@ export const projects: Project[] = [
     status: "shipped",
     tags: ["React", "Node.js", "MongoDB", "Razorpay", "Tailwind CSS"],
     links: [
-      { label: "Live", href: "https://pixscribeai.abhinavkarnatak.com/" },
+      { label: "Live", href: "https://pixscribe.abhinavkarnatak.com/" },
       { label: "GitHub", href: "https://github.com/abhinavkarnatak-dev/PixScribe" },
     ],
     caseStudy: {
@@ -176,7 +176,7 @@ export const projects: Project[] = [
     status: "shipped",
     tags: ["Next.js", "TypeScript", "AI API", "Tailwind CSS"],
     links: [
-      { label: "Live", href: "https://dermaglowai.vercel.app/" },
+      { label: "Live", href: "https://dermaglow.abhinavkarnatak.com/" },
       { label: "GitHub", href: "https://github.com/abhinavkarnatak-dev/DermaGlow-AI" },
     ],
     caseStudy: {
@@ -282,7 +282,7 @@ export const projects: Project[] = [
     status: "shipped",
     tags: ["React", "Vite", "Algorithms", "Tailwind CSS"],
     links: [
-      { label: "Live", href: "https://sudowiz.vercel.app/" },
+      { label: "Live", href: "https://sudowiz.abhinavkarnatak.com/" },
       { label: "GitHub", href: "https://github.com/abhinavkarnatak-dev/SudoWiz" },
     ],
     caseStudy: {
