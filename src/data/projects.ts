@@ -8,6 +8,85 @@ import type { Project } from "./types";
  */
 export const projects: Project[] = [
   {
+    slug: "nimbus",
+    name: "Nimbus",
+    oneLiner:
+      "An autonomous cloud coding agent that can understand a GitHub repo, answer questions about it, write code and ship changes as pull requests.",
+    description:
+      "A full-stack AI coding agent built with React, Node.js and LangGraph, with repository-aware reasoning, isolated E2B execution and secure GitHub integration.",
+    status: "shipped",
+    tags: ["LangGraph", "E2B", "GitHub", "React", "Node.js", "MongoDB"],
+    links: [
+      { label: "Live", href: "https://nimbus.abhinavkarnatak.com/" },
+      { label: "GitHub", href: "https://github.com/abhinavkarnatak-dev/Nimbus" },
+    ],
+    caseStudy: {
+      problem: [
+        // "Real-time chat is trivial to demo and genuinely hard to run. A single Express server with Socket.io works until the first deploy drops every connection, the first traffic spike floods the database, or the first background job (say, sending an OTP email) blocks a request thread.",
+        // "I wanted a chat application built the way a small production team would build it: independent services, an async message broker, a cache layer, a reverse proxy, and a pipeline that ships to a real server on every push - so that every failure mode I read about, I would eventually hit myself.",
+      ],
+      built: [
+        // "YapIt is split into focused Express services - user, chat, and mail - behind an Nginx reverse proxy, with a Next.js frontend. Real-time messaging runs over Socket.io; cross-service work (like OTP emails on signup and global account-data cleanup) goes through RabbitMQ instead of blocking HTTP calls; Redis caches hot reads such as user profiles and chat lists. File sharing is backed by AWS S3.",
+        // "Everything is containerized with Docker Compose and deployed to an AWS EC2 instance. A GitHub Actions pipeline builds and redeploys the services on every push to main.",
+      ],
+      architecture: {
+        description: [
+          // "The frontend talks to Nginx, which routes by path to the user, chat and mail services. The chat service holds Socket.io connections and persists messages to MongoDB. Signup flows publish OTP jobs to RabbitMQ; the mail service consumes the queue and sends email, so a slow SMTP call never delays an API response. Redis sits beside the chat and user services as a read-through cache with explicit invalidation on writes, and uploads go straight to S3.",
+        ],
+        // diagram: { src: "/diagrams/yapit-architecture.png", alt: "YapIt architecture diagram", width: 1400, height: 900 },
+      },
+      hardProblems: [
+        // {
+        //   title: "Redis connections dying silently in production",
+        //   body: [
+        //     "After hours of uptime, services started throwing SocketClosedUnexpectedlyError and crashing on the next cache read. Locally it never reproduced - the connection only gets reaped after long idle periods, which dev sessions never reach.",
+        //     "The fix had two parts: attach a real error handler to the Redis client (an unhandled 'error' event kills the Node process), and configure a reconnect strategy with backoff plus periodic pings so idle connections either stay alive or heal themselves. The deeper lesson: a cache client is a long-lived network dependency, not a constructor you call once and forget.",
+        //   ],
+        // },
+        // {
+        //   title: "RabbitMQ race conditions on cold starts",
+        //   body: [
+        //     "On fresh deploys, services raced the broker: consumers tried to connect and assert queues before RabbitMQ finished booting, so containers crash-looped or - worse - came up 'healthy' without ever attaching a consumer, and OTP emails silently queued forever.",
+        //     "depends_on ordering isn't readiness. I added connection retry loops with backoff in every service, made queue assertion idempotent on both producer and consumer sides, and treated 'broker unavailable' as a normal startup state instead of a fatal error.",
+        //   ],
+        // },
+        // {
+        //   title: "CI/CD deploys failing on git pull conflicts",
+        //   body: [
+        //     "The deploy job SSH'd into EC2 and ran git pull - which worked until a hotfix edited a file directly on the server. From then on every deploy failed with merge conflicts, meaning the pipeline silently stopped shipping.",
+        //     "I stopped treating the server as a checkout anyone may touch: the pipeline now does git fetch + git reset --hard origin/main, and the box is treated as a disposable deploy target. If it needs a fix, the fix goes through the repo.",
+        //   ],
+        // },
+        // {
+        //   title: "EC2 disk slowly filling until deploys died",
+        //   body: [
+        //     "Weeks in, deploys started failing with 'no space left on device'. Every image rebuild left the previous build's layers behind as dangling images, and on a small EC2 volume that adds up fast.",
+        //     "Short-term fix: docker system prune in the deploy script. Long-term fix: multi-stage builds so runtime images stopped carrying build toolchains, which cut image size and made the pruning matter less in the first place.",
+        //   ],
+        // },
+        // {
+        //   title: "Nginx 502s that were really port-mapping bugs",
+        //   body: [
+        //     "Intermittent 502 Bad Gateway errors from Nginx pointed at 'the backend being down' - but the services were running. The actual cause: upstream definitions pointing at ports that a compose refactor had stopped publishing, so Nginx was proxying into a void.",
+        //     "I made every service's internal port explicit in compose, matched upstreams to the compose service names on the shared network instead of host ports, and added a smoke check to the deploy so a bad mapping fails the pipeline instead of paging me with 502s.",
+        //   ],
+        // },
+      ],
+      results: [
+        // "Deploys are hands-off: push to main, and the pipeline rebuilds and restarts the affected services on EC2.",
+        // "OTP and email delivery is fully decoupled from request latency via RabbitMQ - an SMTP outage delays mail, not signups.",
+        // "Services restart cleanly in any order: broker and cache reconnection is handled everywhere, so a single container restart no longer cascades.",
+        // "The failure modes above are fixed at the pipeline level (reset-based deploys, pruning, smoke checks), not patched by hand on the box.",
+      ],
+      stack: [
+        { group: "Frontend", items: ["React", "TypeScript", "Tailwind CSS"] },
+        { group: "Agentic & AI", items: ["LangGraph", "LLM API", "Codebase Retrieval"] },
+        { group: "Backend & Data", items: ["MongoDB", "Redis", "RabbitMQ"] },
+        { group: "Execution & Integrations", items: ["E2B", "GitHub App", "WebSockets"] },
+      ],
+    },
+  },
+  {
     slug: "yapit",
     name: "YapIt",
     oneLiner:
