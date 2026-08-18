@@ -15,7 +15,7 @@ export const skillGroups: SkillGroup[] = [
   },
   {
     label: "AI / ML",
-    skills: ["LangChain", "LangGraph", "RAG", "Agents", "Guardrails", "Gemini API"],
+    skills: ["LangChain", "LangGraph", "RAG", "Agents", "Guardrails", "LLM APIs"],
   },
   {
     label: "Databases",
@@ -23,6 +23,6 @@ export const skillGroups: SkillGroup[] = [
   },
   {
     label: "DevOps / Cloud",
-    skills: ["Docker", "AWS (EC2, S3)", "Nginx", "GitHub Actions", "Linux"],
+    skills: ["Docker", "AWS (EC2, S3)", "Nginx", "GitHub Actions", "Linux", "E2B"],
   },
 ];

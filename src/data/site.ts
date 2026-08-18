@@ -6,16 +6,16 @@ export const site = {
   mark: "ak.",
   /** Hero positioning line, split so the accent word gets the serif-italic treatment. */
   hero: {
-    lead: "Full-stack engineer building",
+    lead: "Full-stack developer building",
     accent: "AI-native",
     /** Cycled by the live hero's FlipWords effect - `accent` above is the static
         first frame, used as-is for the (unanimated) OG image render. */
     accentWords: ["AI-native", "scalable", "resilient", "reliable"],
     tail: "products.",
   },
-  tagline: "Next.js · Node · LangChain/LangGraph · AWS",
-  status: "Open to SDE + AI roles",
-  jobTitle: "Full-Stack Engineer",
+  tagline: "Next.js · Node · LangGraph · AWS",
+  status: "Open to FDE · AI · SDE roles",
+  jobTitle: "Full-Stack Developer",
   description:
     "Full-stack engineer building AI-native products with Next.js, Node, LangChain/LangGraph and AWS. Open to SDE + AI roles.",
   /** Canonical origin for metadata, OG images and the sitemap. Set NEXT_PUBLIC_SITE_URL in production. */
