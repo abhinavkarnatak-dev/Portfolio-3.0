@@ -22,67 +22,67 @@ export const projects: Project[] = [
     ],
     caseStudy: {
       problem: [
-        // "Real-time chat is trivial to demo and genuinely hard to run. A single Express server with Socket.io works until the first deploy drops every connection, the first traffic spike floods the database, or the first background job (say, sending an OTP email) blocks a request thread.",
-        // "I wanted a chat application built the way a small production team would build it: independent services, an async message broker, a cache layer, a reverse proxy, and a pipeline that ships to a real server on every push - so that every failure mode I read about, I would eventually hit myself.",
+        "An agent that writes code is a demo. An agent that writes code in your repository is a security problem wearing a demo's clothes. The moment it can run commands and push branches, the interesting question stops being 'can the model do it' and becomes 'what happens when the model is wrong, or when a file in the repo tells it to do something its owner never asked for'.",
+        "I wanted to build the version that takes that question seriously: the model proposes, deterministic code decides, and the machine running untrusted commands holds nothing worth stealing. Everything else in Nimbus follows from that one rule.",
       ],
       built: [
-        // "YapIt is split into focused Express services - user, chat, and mail - behind an Nginx reverse proxy, with a Next.js frontend. Real-time messaging runs over Socket.io; cross-service work (like OTP emails on signup and global account-data cleanup) goes through RabbitMQ instead of blocking HTTP calls; Redis caches hot reads such as user profiles and chat lists. File sharing is backed by AWS S3.",
-        // "Everything is containerized with Docker Compose and deployed to an AWS EC2 instance. A GitHub Actions pipeline builds and redeploys the services on every push to main.",
+        "Nimbus takes one public repository and one task, opens an isolated E2B sandbox, and runs a LangGraph agent loop inside it with a fixed toolset - list, search, read, patch, create, run commands, run checks, package a commit. Ask how something works and it reads the files and answers without changing anything; ask for a change and it writes one, runs your tests and linter, and opens a pull request. Both happen in the same conversation, which outlives any single run.",
+        "The model is the user's own Gemini key, encrypted per account, so nothing is billed to the deployment. Sessions stream live over WebSockets: every step, every command, every changed file with a red/green diff, every check result, and the pull request when it lands.",
       ],
       architecture: {
         description: [
-          // "The frontend talks to Nginx, which routes by path to the user, chat and mail services. The chat service holds Socket.io connections and persists messages to MongoDB. Signup flows publish OTP jobs to RabbitMQ; the mail service consumes the queue and sends email, so a slow SMTP call never delays an API response. Redis sits beside the chat and user services as a read-through cache with explicit invalidation on writes, and uploads go straight to S3.",
+          "The system is drawn around one question: where can a credential exist? The sandbox is treated as hostile, because it runs model-proposed commands against code written by strangers. It receives no GitHub token, no database URI, no model key, no session secret. It can only ever hand back a patch.",
+          "The trusted backend does the rest. It validates that patch - base commit, paths, protected files, size, secret scanning - then mints a GitHub token narrowed to one repository and the minimum permissions, pushes to a branch it created, opens the pull request, and throws the token away. A deterministic policy gate runs before every effect and pauses for human approval on anything destructive. MongoDB holds sessions and durable state, Redis holds sessions, locks and rate limits, and no string produced by a model or a repository ever reaches the code that authorizes an action.",
         ],
-        // diagram: { src: "/diagrams/yapit-architecture.png", alt: "YapIt architecture diagram", width: 1400, height: 900 },
       },
       hardProblems: [
-        // {
-        //   title: "Redis connections dying silently in production",
-        //   body: [
-        //     "After hours of uptime, services started throwing SocketClosedUnexpectedlyError and crashing on the next cache read. Locally it never reproduced - the connection only gets reaped after long idle periods, which dev sessions never reach.",
-        //     "The fix had two parts: attach a real error handler to the Redis client (an unhandled 'error' event kills the Node process), and configure a reconnect strategy with backoff plus periodic pings so idle connections either stay alive or heal themselves. The deeper lesson: a cache client is a long-lived network dependency, not a constructor you call once and forget.",
-        //   ],
-        // },
-        // {
-        //   title: "RabbitMQ race conditions on cold starts",
-        //   body: [
-        //     "On fresh deploys, services raced the broker: consumers tried to connect and assert queues before RabbitMQ finished booting, so containers crash-looped or - worse - came up 'healthy' without ever attaching a consumer, and OTP emails silently queued forever.",
-        //     "depends_on ordering isn't readiness. I added connection retry loops with backoff in every service, made queue assertion idempotent on both producer and consumer sides, and treated 'broker unavailable' as a normal startup state instead of a fatal error.",
-        //   ],
-        // },
-        // {
-        //   title: "CI/CD deploys failing on git pull conflicts",
-        //   body: [
-        //     "The deploy job SSH'd into EC2 and ran git pull - which worked until a hotfix edited a file directly on the server. From then on every deploy failed with merge conflicts, meaning the pipeline silently stopped shipping.",
-        //     "I stopped treating the server as a checkout anyone may touch: the pipeline now does git fetch + git reset --hard origin/main, and the box is treated as a disposable deploy target. If it needs a fix, the fix goes through the repo.",
-        //   ],
-        // },
-        // {
-        //   title: "EC2 disk slowly filling until deploys died",
-        //   body: [
-        //     "Weeks in, deploys started failing with 'no space left on device'. Every image rebuild left the previous build's layers behind as dangling images, and on a small EC2 volume that adds up fast.",
-        //     "Short-term fix: docker system prune in the deploy script. Long-term fix: multi-stage builds so runtime images stopped carrying build toolchains, which cut image size and made the pruning matter less in the first place.",
-        //   ],
-        // },
-        // {
-        //   title: "Nginx 502s that were really port-mapping bugs",
-        //   body: [
-        //     "Intermittent 502 Bad Gateway errors from Nginx pointed at 'the backend being down' - but the services were running. The actual cause: upstream definitions pointing at ports that a compose refactor had stopped publishing, so Nginx was proxying into a void.",
-        //     "I made every service's internal port explicit in compose, matched upstreams to the compose service names on the shared network instead of host ports, and added a smoke check to the deploy so a bad mapping fails the pipeline instead of paging me with 502s.",
-        //   ],
-        // },
+        {
+          title: "A passing test that locked in the bug",
+          body: [
+            "Pull request emails arrived for some pull requests and not others, with no pattern I could see. The notification lived inside the pull request gateway and was reached on exactly one path - the one where the gateway had just created the pull request itself. Two early returns skipped it silently: finding a pull request already open on the branch, and losing a creation race then fetching the winner. Branch names are derived from the session id, so they are stable, which meant any session that ran a second time took the first of those paths and said nothing.",
+            "The part worth remembering is that a test named 'notifies once, not once per attempt' passed the entire time. It was asserting the behaviour of the fake gateway rather than the behaviour anybody wanted. I moved notification out to the session runner, which is the only place that knows what the session already had, and keyed it on a pull request number the session was not already carrying. A green suite is evidence that the code does what the tests say, not that the tests say the right thing.",
+          ],
+        },
+        {
+          title: "Mail that worked everywhere except production",
+          body: [
+            "Sign-in codes sent fine from my machine and failed on the deployment, every time, after a 10.7 second wait. My first guess was that the host blocked outbound SMTP. That guess did not survive being reminded that production had sent mail before. The log said ESOCKET on CONN with 'connect ENETUNREACH' against an IPv6 address, so I forced the transport to IPv4 - and nothing changed. The next failure named a different IPv6 address, which was the actual clue: something was choosing, and choosing differently each time.",
+            "It was in the mail library. It resolves the hostname itself, concatenates the A and AAAA records, and then takes addresses[Math.floor(Math.random() * addresses.length)] before handing a literal to the socket - by which point an IPv4 preference is meaningless, because there is no name left to resolve. On a host with no IPv6 route, every AAAA record in that list is a coin flip that fails. Resolving to IPv4 myself fixed the flip, but not the shape of the problem, so mail moved onto an HTTPS API instead. Reading the library's source took ten minutes and replaced three confident wrong theories.",
+          ],
+        },
+        {
+          title: "Attachments that could not be deleted",
+          body: [
+            "Five images filled the per-account limit. Removing all five appeared to empty it, and the next upload was still refused. The browser and the database disagreed about what existed, which is a bad thing for a database to be uncertain about.",
+            "The uploads were being started from inside a React state updater. React invokes those twice in StrictMode precisely to expose updaters that are not pure, and each invocation minted fresh local ids and fired its own upload - so one chosen file became two rows, and only one of them carried an id the browser could ever use to delete it. The other was an orphan that counted against the limit until a sweeper found it a day later. Moving the uploads and deletes out of the updater fixed it, and the lesson generalises: a state updater is a pure function of the previous state, and anything with a side effect does not belong in one.",
+          ],
+        },
+        {
+          title: "A cookie that ignored the server's clock",
+          body: [
+            "People were being signed out mid-sentence, roughly an hour after signing in, no matter how active they had been. The server side looked correct - every request pushed the stored session another hour into the future, so as far as Redis was concerned an active person stayed active.",
+            "The browser was never told. The cookie was written once, at sign in, with a one hour life, and nothing ever rewrote it, so the two clocks disagreed and the shorter one always won. There was also a hard ceiling calculated by multiplying the idle window by twenty four, which meant neither number could be moved without moving the other. The cookie is now rewritten on every request that carries a working session, from the same number the server just used, the idle window and the ceiling are separate settings, and a refreshed cookie is never given more time than the session actually has left.",
+          ],
+        },
+        {
+          title: "Two hosts that could not share a session",
+          body: [
+            "With the API on one platform and the browser app on another, signing in worked and every request after it was anonymous. The cookie was being set and then never sent again.",
+            "Session cookies are SameSite=Lax, and browsers decide 'same site' by registrable domain rather than by host - so a frontend on one vendor's domain calling an API on another's is cross-site, and Lax means the cookie stays home. No CORS header fixes that, and SameSite=None would have given up the exact protection the cookie exists to provide. The answer was to stop fighting it and put both halves under one domain I own, as sibling subdomains. Some problems are configuration; this one was a property of the web, and the only correct move was to arrange the deployment around it.",
+          ],
+        },
       ],
       results: [
-        // "Deploys are hands-off: push to main, and the pipeline rebuilds and restarts the affected services on EC2.",
-        // "OTP and email delivery is fully decoupled from request latency via RabbitMQ - an SMTP outage delays mail, not signups.",
-        // "Services restart cleanly in any order: broker and cache reconnection is handled everywhere, so a single container restart no longer cascades.",
-        // "The failure modes above are fixed at the pipeline level (reset-based deploys, pruning, smoke checks), not patched by hand on the box.",
+        "The sandbox holds no credential of any kind - it can only hand back a patch, which the trusted backend validates before that patch is allowed to become a branch.",
+        "Nimbus cannot merge, approve, close, force-push, or write to a default branch. Pushing to the default branch is refused in code, not by convention.",
+        "Answering a question and making a change are the same conversation: a session can end with an answer and no diff, or with a reviewed pull request, and follow-ups continue where it left off.",
+        "Backed by over 3,400 unit tests plus integration tests against real MongoDB and Redis, and running in production on managed Mongo, Redis, object storage and sandboxes.",
       ],
       stack: [
-        { group: "Frontend", items: ["React", "TypeScript", "Tailwind CSS"] },
-        { group: "Agentic & AI", items: ["LangGraph", "LLM API", "Codebase Retrieval"] },
-        { group: "Backend & Data", items: ["MongoDB", "Redis", "RabbitMQ"] },
-        { group: "Execution & Integrations", items: ["E2B", "GitHub App", "WebSockets"] },
+        { group: "Frontend", items: ["React", "TypeScript", "Vite", "WebSockets"] },
+        { group: "Agent", items: ["LangGraph", "Gemini", "Code retrieval", "Policy gate"] },
+        { group: "Backend & Data", items: ["Node.js", "Express", "MongoDB", "Redis"] },
+        { group: "Execution & Integrations", items: ["E2B", "GitHub App", "Cloudflare R2"] },
       ],
     },
   },
