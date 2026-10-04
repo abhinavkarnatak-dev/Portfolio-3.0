@@ -18,7 +18,10 @@ export const projects: Project[] = [
     tags: ["LangGraph", "E2B", "GitHub", "React", "Node.js", "MongoDB"],
     links: [
       { label: "Live", href: "https://nimbus.abhinavkarnatak.com/" },
-      { label: "GitHub", href: "https://github.com/abhinavkarnatak-dev/Nimbus" },
+      {
+        label: "GitHub",
+        href: "https://github.com/abhinavkarnatak-dev/Nimbus",
+      },
     ],
     caseStudy: {
       problem: [
@@ -79,10 +82,111 @@ export const projects: Project[] = [
         "Backed by over 3,400 unit tests plus integration tests against real MongoDB and Redis, and running in production on managed Mongo, Redis, object storage and sandboxes.",
       ],
       stack: [
-        { group: "Frontend", items: ["React", "TypeScript", "Vite", "WebSockets"] },
-        { group: "Agent", items: ["LangGraph", "Gemini", "Code retrieval", "Policy gate"] },
-        { group: "Backend & Data", items: ["Node.js", "Express", "MongoDB", "Redis"] },
-        { group: "Execution & Integrations", items: ["E2B", "GitHub App", "Cloudflare R2"] },
+        {
+          group: "Frontend",
+          items: ["React", "TypeScript", "Vite", "WebSockets"],
+        },
+        {
+          group: "Agent",
+          items: ["LangGraph", "Gemini", "Code retrieval", "Policy gate"],
+        },
+        {
+          group: "Backend & Data",
+          items: ["Node.js", "Express", "MongoDB", "Redis"],
+        },
+        {
+          group: "Execution & Integrations",
+          items: ["E2B", "GitHub App", "Cloudflare R2"],
+        },
+      ],
+    },
+  },
+  {
+    slug: "wakeops",
+    name: "WakeOps",
+    oneLiner:
+      "Incident response platform that turns Grafana alerts into durable call, email and Slack escalation workflows.",
+    description:
+      "A full-stack incident response platform built with Next.js, Express, PostgreSQL and Temporal, with Grafana webhooks, Twilio calls and queued notifications.",
+    status: "shipped",
+    tags: ["Next.js", "Temporal", "PostgreSQL", "Twilio", "RabbitMQ"],
+    links: [
+      { label: "Live", href: "https://wakeops.abhinavkarnatak.com/" },
+      {
+        label: "GitHub",
+        href: "https://github.com/abhinavkarnatak-dev/WakeOps",
+      },
+    ],
+    caseStudy: {
+      problem: [
+        "An alert is not an incident response. Grafana can say that a service is failing, but it does not know which engineer owns that service, whether they answered the call, when to try again, or when to escalate. Handling those steps by hand works until the alert arrives at the wrong hour and every missed minute matters.",
+        "I wanted WakeOps to own that gap: accept one alert, map it to the right people and infrastructure, keep the response running outside the original HTTP request, and leave behind one clear incident record instead of a trail spread across provider dashboards.",
+      ],
+      built: [
+        "WakeOps gives each organization a secured Grafana webhook and a setup flow for hosts, services, environments, and on-call and senior engineers. A firing alert is verified, normalized, mapped to the saved deployment, fingerprinted to stop duplicate active incidents, and persisted before the API returns. The dashboard then shows the incident, its status, call attempts, and audit timeline as they change.",
+        "Each new incident starts a Temporal workflow. The worker calls the on-call engineer through Twilio, waits for the result, retries unanswered calls, and escalates to the senior engineer when both on-call attempts fail. Email and Slack jobs go through RabbitMQ, so a slow notification provider cannot hold up the call path, and Twilio callbacks update PostgreSQL and signal the running workflow when somebody acknowledges.",
+      ],
+      architecture: {
+        description: [
+          "The Next.js app handles Google sign-in, organization setup, integrations, and incident views. The Express API handles short-lived work: Grafana webhooks, Twilio voice and status callbacks, health checks, and signals sent to Temporal. PostgreSQL is the application source of truth for mappings, incidents, attempts, and audit events; Temporal owns timers, retries, and long-running workflow state.",
+          "The worker is deliberately separate from the API. It polls Temporal, runs call activities, publishes RabbitMQ jobs, and consumes the email and Slack queues without needing a public URL. The web app runs on Vercel, the API on Render, and managed Supabase, Temporal Cloud, and CloudAMQP provide the shared state and messaging that let the pieces communicate.",
+        ],
+      },
+      hardProblems: [
+        {
+          title:
+            "A healthy deployment that could not open one more database connection",
+          body: [
+            "Google sign-in started looping back to the login page while the API health check stayed green. The Vercel logs finally showed the real failure: Supabase's session pool had reached its fifteen-client limit. Every serverless instance could create a Prisma client, and reusing one client inside a warm process could not stop multiple processes from holding sessions.",
+            "The web deployment moved to Supabase's transaction pooler with a one-connection Prisma limit, while the Prisma client is cached globally inside each warm runtime. That matches the connection model to serverless execution: short requests borrow a pooled connection instead of every function instance trying to own a database session.",
+          ],
+        },
+        {
+          title: "New worker source running an old workflow",
+          body: [
+            "A Temporal activity failed because attemptNumber was missing, even though the TypeScript source clearly passed it. The worker imported the workflows package through its compiled dist output, and that output was older than the source. Restarting the worker kept loading the stale bundle, so the failure looked like a data problem instead of a build problem.",
+            "The worker's development command now builds the workflows package before it starts. I also treated already-running workflows separately: Temporal preserves their event history, so changing source code cannot rewrite arguments already recorded for an old execution. Stale executions are terminated and new incidents start against the fresh bundle.",
+          ],
+        },
+        {
+          title: "One free process trying to be both API and worker",
+          body: [
+            "Running the Express API and Temporal worker in one Render service looked convenient, but the service became inconsistent under a small memory and CPU budget. The worker bundles workflow code, holds long-lived Temporal and RabbitMQ connections, and runs consumers, while the API needs predictable resources for webhooks, callbacks, and health checks. A failure in either process also brought down the other.",
+            "I separated the API from the worker again. Render now serves only HTTP traffic, while the worker runs independently and connects outbound to Temporal Cloud, Supabase, CloudAMQP, and Twilio. There is no worker URL because nothing calls into it; it polls for work and can reconnect without changing any webhook configuration.",
+          ],
+        },
+        {
+          title: "A live counter that froze at 09",
+          body: [
+            "The overview counters animated correctly on page load but failed during polling. When call attempts moved from 9 to 10, the UI displayed 09 and stayed there; other increases and decreases appeared unchanged until a manual reload. The polling data was fresh. The animation effect updated the same state listed in its dependency array, so its cleanup ran immediately and cancelled the frame that would have completed the transition.",
+            "I replaced the per-digit reset with a stable previous-value-to-next-value transition driven only by the server value. The old and new numbers are separate layers, increases and decreases move in opposite directions, and an internal state update can no longer cancel its own animation. That also removed the temporary leading zero at digit boundaries.",
+          ],
+        },
+      ],
+      results: [
+        "A mapped Grafana alert becomes one deduplicated incident with an assigned on-call engineer, durable retries, senior escalation, and a complete call and audit history.",
+        "The webhook returns after validation and persistence; calls, timers, retries, and notifications continue independently through Temporal and RabbitMQ.",
+        "Email, Slack, and voice are separate delivery paths, so one provider failing or slowing down does not block the others.",
+        "The web app and API run behind permanent custom domains, while the worker connects outbound and can move to any always-on host without changing public callbacks.",
+      ],
+      stack: [
+        {
+          group: "Frontend",
+          items: ["Next.js", "TypeScript", "Tailwind CSS", "Auth.js"],
+        },
+        {
+          group: "Backend & Data",
+          items: ["Node.js", "Express", "PostgreSQL", "Prisma"],
+        },
+        { group: "Workflow & Messaging", items: ["Temporal", "RabbitMQ"] },
+        {
+          group: "Integrations",
+          items: ["Grafana", "Twilio", "Slack", "Resend"],
+        },
+        {
+          group: "Infrastructure",
+          items: ["Vercel", "Render", "Supabase", "CloudAMQP"],
+        },
       ],
     },
   },
@@ -161,7 +265,10 @@ export const projects: Project[] = [
         { group: "Frontend", items: ["Next.js", "TypeScript", "Tailwind CSS"] },
         { group: "Services", items: ["Node.js", "Express", "Socket.io"] },
         { group: "Data & messaging", items: ["MongoDB", "Redis", "RabbitMQ"] },
-        { group: "Infra", items: ["Docker", "Nginx", "AWS (EC2, S3)", "GitHub Actions"] },
+        {
+          group: "Infra",
+          items: ["Docker", "Nginx", "AWS (EC2, S3)", "GitHub Actions"],
+        },
       ],
     },
   },
@@ -176,7 +283,10 @@ export const projects: Project[] = [
     tags: ["React", "Node.js", "PostgreSQL", "Prisma", "Gemini API"],
     links: [
       { label: "Live", href: "https://revuea.abhinavkarnatak.com/" },
-      { label: "GitHub", href: "https://github.com/abhinavkarnatak-dev/Revuea" },
+      {
+        label: "GitHub",
+        href: "https://github.com/abhinavkarnatak-dev/Revuea",
+      },
     ],
     caseStudy: {
       problem: [
@@ -216,7 +326,10 @@ export const projects: Project[] = [
     tags: ["React", "Node.js", "MongoDB", "Razorpay", "Tailwind CSS"],
     links: [
       { label: "Live", href: "https://pixscribe.abhinavkarnatak.com/" },
-      { label: "GitHub", href: "https://github.com/abhinavkarnatak-dev/PixScribe" },
+      {
+        label: "GitHub",
+        href: "https://github.com/abhinavkarnatak-dev/PixScribe",
+      },
     ],
     caseStudy: {
       problem: [
@@ -239,7 +352,10 @@ export const projects: Project[] = [
         "Fast, responsive UI with animated state transitions across the generate → pay → generate loop.",
       ],
       stack: [
-        { group: "Frontend", items: ["React", "Tailwind CSS", "Framer Motion"] },
+        {
+          group: "Frontend",
+          items: ["React", "Tailwind CSS", "Framer Motion"],
+        },
         { group: "Backend", items: ["Node.js", "Express", "MongoDB"] },
         { group: "Payments", items: ["Razorpay"] },
       ],
@@ -256,7 +372,10 @@ export const projects: Project[] = [
     tags: ["Next.js", "TypeScript", "AI API", "Tailwind CSS"],
     links: [
       { label: "Live", href: "https://dermaglow.abhinavkarnatak.com/" },
-      { label: "GitHub", href: "https://github.com/abhinavkarnatak-dev/DermaGlow-AI" },
+      {
+        label: "GitHub",
+        href: "https://github.com/abhinavkarnatak-dev/DermaGlow-AI",
+      },
     ],
     caseStudy: {
       problem: [
@@ -292,7 +411,12 @@ export const projects: Project[] = [
       "A React Native (Expo) accessibility app for visually and hearing-impaired users: a media pipeline routing audio, image, text and braille inputs to visual or auditory outputs via Gemini.",
     status: "shipped",
     tags: ["React Native", "Expo", "Gemini API", "Accessibility"],
-    links: [{ label: "GitHub", href: "https://github.com/abhinavkarnatak-dev/AdaptSense" }],
+    links: [
+      {
+        label: "GitHub",
+        href: "https://github.com/abhinavkarnatak-dev/AdaptSense",
+      },
+    ],
     caseStudy: {
       problem: [
         "Accessibility tools tend to solve one translation in one direction - speech-to-text, or text-to-speech, and that's it. Visually and hearing-impaired users live across many combinations of input and output, and switching apps for each one is friction they shouldn't have to carry.",
@@ -322,14 +446,18 @@ export const projects: Project[] = [
   {
     slug: "aviageek",
     name: "AviaGeek",
-    oneLiner: "An aircraft model guide for aviation geeks - explore aircraft, model by model.",
+    oneLiner:
+      "An aircraft model guide for aviation geeks - explore aircraft, model by model.",
     description:
       "A Next.js web app for exploring aircraft models: an aviation reference guide with a clean, browsable interface for plane spotters and enthusiasts.",
     status: "shipped",
     tags: ["Next.js", "React", "Tailwind CSS"],
     links: [
       { label: "Live", href: "https://aviageek.abhinavkarnatak.com/" },
-      { label: "GitHub", href: "https://github.com/abhinavkarnatak-dev/AviaGeek" },
+      {
+        label: "GitHub",
+        href: "https://github.com/abhinavkarnatak-dev/AviaGeek",
+      },
     ],
     caseStudy: {
       problem: [
@@ -362,7 +490,10 @@ export const projects: Project[] = [
     tags: ["React", "Vite", "Algorithms", "Tailwind CSS"],
     links: [
       { label: "Live", href: "https://sudowiz.abhinavkarnatak.com/" },
-      { label: "GitHub", href: "https://github.com/abhinavkarnatak-dev/SudoWiz" },
+      {
+        label: "GitHub",
+        href: "https://github.com/abhinavkarnatak-dev/SudoWiz",
+      },
     ],
     caseStudy: {
       problem: [
