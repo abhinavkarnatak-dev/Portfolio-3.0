@@ -9,90 +9,72 @@ import type { Project } from "./types";
 export const projects: Project[] = [
   {
     slug: "nimbus",
-    name: "Nimbus",
+    name: "Nimbus: Cloud Development Agent",
     oneLiner:
-      "An autonomous cloud coding agent that can understand a GitHub repo, answer questions about it, write code and ship changes as pull requests.",
+      "A cloud development agent that understands repositories, researches technical questions, and delivers verified code changes.",
     description:
-      "A full-stack AI coding agent built with React, Node.js and LangGraph, with repository-aware reasoning, isolated E2B execution and secure GitHub integration.",
+      "A full-stack cloud agent built with Next.js, TypeScript, PostgreSQL, Codex, isolated E2B workspaces, and GitHub integration.",
     status: "shipped",
-    tags: ["LangGraph", "E2B", "GitHub", "React", "Node.js", "MongoDB"],
+    tags: ["Codex", "E2B", "GitHub", "Next.js", "PostgreSQL", "Agent Workflows"],
     links: [
       { label: "Live", href: "https://nimbus.abhinavkarnatak.com/" },
       {
         label: "GitHub",
-        href: "https://github.com/abhinavkarnatak-dev/Nimbus",
+        href: "https://github.com/abhinavkarnatak-dev/Nimbus-2.0",
       },
     ],
     caseStudy: {
       problem: [
-        "An agent that writes code is a demo. An agent that writes code in your repository is a security problem wearing a demo's clothes. The moment it can run commands and push branches, the interesting question stops being 'can the model do it' and becomes 'what happens when the model is wrong, or when a file in the repo tells it to do something its owner never asked for'.",
-        "I wanted to build the version that takes that question seriously: the model proposes, deterministic code decides, and the machine running untrusted commands holds nothing worth stealing. Everything else in Nimbus follows from that one rule.",
+        "Most coding agents stop at generating an answer or a patch. I wanted Nimbus to handle the complete loop: understand the repository, research when needed, make the change, verify it, and leave the user with an inspectable result.",
       ],
       built: [
-        "Nimbus takes one public repository and one task, opens an isolated E2B sandbox, and runs a LangGraph agent loop inside it with a fixed toolset - list, search, read, patch, create, run commands, run checks, package a commit. Ask how something works and it reads the files and answers without changing anything; ask for a change and it writes one, runs your tests and linter, and opens a pull request. Both happen in the same conversation, which outlives any single run.",
-        "The model is the user's own Gemini key, encrypted per account, so nothing is billed to the deployment. Sessions stream live over WebSockets: every step, every command, every changed file with a red/green diff, every check result, and the pull request when it lands.",
+        "Nimbus lets users start with a general conversation or a selected repository. It can read files, answer codebase questions, search the web, generate files and artifacts, create Mermaid diagrams, and continue the same conversation when the user later asks it to change the code.",
+        "For repository work, Nimbus provisions an isolated E2B workspace and uses Codex to inspect files, edit code, run commands, execute checks, and stream the work back to the user. Completed work can be reviewed and delivered through trusted GitHub pull-request creation, updates, merges, and closures.",
       ],
       architecture: {
         description: [
-          "The system is drawn around one question: where can a credential exist? The sandbox is treated as hostile, because it runs model-proposed commands against code written by strangers. It receives no GitHub token, no database URI, no model key, no session secret. It can only ever hand back a patch.",
-          "The trusted backend does the rest. It validates that patch - base commit, paths, protected files, size, secret scanning - then mints a GitHub token narrowed to one repository and the minimum permissions, pushes to a branch it created, opens the pull request, and throws the token away. A deterministic policy gate runs before every effect and pauses for human approval on anything destructive. MongoDB holds sessions and durable state, Redis holds sessions, locks and rate limits, and no string produced by a model or a repository ever reaches the code that authorizes an action.",
+          "The Next.js control plane owns authentication, tenant data, conversations, model and skill selection, attachments, audit history, and trusted GitHub actions. Codex handles repository reasoning and tool use, while the executor and Eve provide durable task orchestration around each turn.",
+          "Each repository task runs in an isolated E2B workspace. The sandbox can work on the checked-out code, but GitHub credentials and publishing decisions stay in the trusted backend. PostgreSQL stores durable session state, and Cloudflare R2 stores user attachments.",
         ],
       },
       hardProblems: [
         {
-          title: "A passing test that locked in the bug",
+          title: "Turning a general chat into repository work",
           body: [
-            "Pull request emails arrived for some pull requests and not others, with no pattern I could see. The notification lived inside the pull request gateway and was reached on exactly one path - the one where the gateway had just created the pull request itself. Two early returns skipped it silently: finding a pull request already open on the branch, and losing a creation race then fetching the winner. Branch names are derived from the session id, so they are stable, which meant any session that ran a second time took the first of those paths and said nothing.",
-            "The part worth remembering is that a test named 'notifies once, not once per attempt' passed the entire time. It was asserting the behaviour of the fake gateway rather than the behaviour anybody wanted. I moved notification out to the session runner, which is the only place that knows what the session already had, and keyed it on a pull request number the session was not already carrying. A green suite is evidence that the code does what the tests say, not that the tests say the right thing.",
+            "A user may begin with a normal conversation, ask about a repository later, and only then request a code change. Nimbus keeps the earlier context, identifies the repository from the conversation, and provisions a workspace only when the request actually requires one.",
           ],
         },
         {
-          title: "Mail that worked everywhere except production",
+          title: "Pausing a session without losing its context",
           body: [
-            "Sign-in codes sent fine from my machine and failed on the deployment, every time, after a 10.7 second wait. My first guess was that the host blocked outbound SMTP. That guess did not survive being reminded that production had sent mail before. The log said ESOCKET on CONN with 'connect ENETUNREACH' against an IPv6 address, so I forced the transport to IPv4 - and nothing changed. The next failure named a different IPv6 address, which was the actual clue: something was choosing, and choosing differently each time.",
-            "It was in the mail library. It resolves the hostname itself, concatenates the A and AAAA records, and then takes addresses[Math.floor(Math.random() * addresses.length)] before handing a literal to the socket - by which point an IPv4 preference is meaningless, because there is no name left to resolve. On a host with no IPv6 route, every AAAA record in that list is a coin flip that fails. Resolving to IPv4 myself fixed the flip, but not the shape of the problem, so mail moved onto an HTTPS API instead. Reading the library's source took ten minutes and replaced three confident wrong theories.",
+            "Workspaces pause after inactivity, but the conversation must remain useful. Nimbus checkpoints the workspace and conversation state, then restores the same session and Codex thread when the user sends a follow-up instead of starting from scratch.",
           ],
         },
         {
-          title: "Attachments that could not be deleted",
+          title: "Keeping agent actions safe to publish",
           body: [
-            "Five images filled the per-account limit. Removing all five appeared to empty it, and the next upload was still refused. The browser and the database disagreed about what existed, which is a bad thing for a database to be uncertain about.",
-            "The uploads were being started from inside a React state updater. React invokes those twice in StrictMode precisely to expose updaters that are not pure, and each invocation minted fresh local ids and fired its own upload - so one chosen file became two rows, and only one of them carried an id the browser could ever use to delete it. The other was an orphan that counted against the limit until a sweeper found it a day later. Moving the uploads and deletes out of the updater fixed it, and the lesson generalises: a state updater is a pure function of the previous state, and anything with a side effect does not belong in one.",
-          ],
-        },
-        {
-          title: "A cookie that ignored the server's clock",
-          body: [
-            "People were being signed out mid-sentence, roughly an hour after signing in, no matter how active they had been. The server side looked correct - every request pushed the stored session another hour into the future, so as far as Redis was concerned an active person stayed active.",
-            "The browser was never told. The cookie was written once, at sign in, with a one hour life, and nothing ever rewrote it, so the two clocks disagreed and the shorter one always won. There was also a hard ceiling calculated by multiplying the idle window by twenty four, which meant neither number could be moved without moving the other. The cookie is now rewritten on every request that carries a working session, from the same number the server just used, the idle window and the ceiling are separate settings, and a refreshed cookie is never given more time than the session actually has left.",
-          ],
-        },
-        {
-          title: "Two hosts that could not share a session",
-          body: [
-            "With the API on one platform and the browser app on another, signing in worked and every request after it was anonymous. The cookie was being set and then never sent again.",
-            "Session cookies are SameSite=Lax, and browsers decide 'same site' by registrable domain rather than by host - so a frontend on one vendor's domain calling an API on another's is cross-site, and Lax means the cookie stays home. No CORS header fixes that, and SameSite=None would have given up the exact protection the cookie exists to provide. The answer was to stop fighting it and put both halves under one domain I own, as sibling subdomains. Some problems are configuration; this one was a property of the web, and the only correct move was to arrange the deployment around it.",
+            "The agent can edit code and run commands, but the execution environment should never receive the credentials needed to publish changes. Nimbus keeps credentials in the trusted backend, validates the resulting workspace changes, and performs GitHub pull-request actions through controlled server-side operations.",
           ],
         },
       ],
       results: [
-        "The sandbox holds no credential of any kind - it can only hand back a patch, which the trusted backend validates before that patch is allowed to become a branch.",
-        "Nimbus cannot merge, approve, close, force-push, or write to a default branch. Pushing to the default branch is refused in code, not by convention.",
-        "Answering a question and making a change are the same conversation: a session can end with an answer and no diff, or with a reviewed pull request, and follow-ups continue where it left off.",
-        "Backed by over 3,400 unit tests plus integration tests against real MongoDB and Redis, and running in production on managed Mongo, Redis, object storage and sandboxes.",
+        "One conversation can move from repository questions to verified code changes without losing context.",
+        "Users can inspect streamed work, file changes, checks, generated artifacts, audit events, and pull-request results before delivery.",
+        "Sessions support follow-ups, selected skills, attachments, Mermaid diagrams, and pause-and-resume recovery.",
+        "GitHub credentials remain outside the sandbox while repository changes are delivered through controlled pull-request actions.",
       ],
       stack: [
         {
-          group: "Frontend",
-          items: ["React", "TypeScript", "Vite", "WebSockets"],
+          group: "Frontend & Control Plane",
+          items: ["Next.js", "React", "TypeScript", "WebSockets"],
         },
         {
-          group: "Agent",
-          items: ["LangGraph", "Gemini", "Code retrieval", "Policy gate"],
+          group: "Agent & Orchestration",
+          items: ["Codex App Server", "Agent Workflows", "Eve", "Mermaid"],
         },
         {
           group: "Backend & Data",
-          items: ["Node.js", "Express", "MongoDB", "Redis"],
+          items: ["Node.js", "PostgreSQL", "Drizzle ORM", "PostHog"],
         },
         {
           group: "Execution & Integrations",
@@ -342,14 +324,14 @@ export const projects: Project[] = [
       ],
       architecture: {
         description: [
-          "React frontend against a Node.js/Express API with MongoDB for users, balances and generation history. The payment flow goes client → Razorpay checkout → server-side verification of the transaction signature → atomic credit update, keeping the balance authoritative on the server rather than trusting the client.",
+          "React frontend against a Node.js/Express API with MongoDB for users, balances and generation history. The payment flow goes client â†’ Razorpay checkout â†’ server-side verification of the transaction signature â†’ atomic credit update, keeping the balance authoritative on the server rather than trusting the client.",
         ],
       },
       hardProblems: [],
       results: [
         "Credits meter real generation cost per account, with balances updated automatically on verified payments.",
         "Payment verification is server-side - client-reported success alone never credits an account.",
-        "Fast, responsive UI with animated state transitions across the generate → pay → generate loop.",
+        "Fast, responsive UI with animated state transitions across the generate â†’ pay â†’ generate loop.",
       ],
       stack: [
         {
