@@ -1,28 +1,78 @@
+
 import type { SkillGroup } from "./types";
 
 export const skillGroups: SkillGroup[] = [
   {
     label: "Languages",
-    skills: ["JavaScript", "TypeScript", "C++", "Python"],
+    skills: ["JavaScript", "TypeScript", "Python", "C++"],
   },
   {
     label: "Frontend",
-    skills: ["React", "Next.js", "React Native", "Tailwind CSS", "Framer Motion", "PWAs", "Figma"],
+    skills: [
+      "React.js",
+      "Next.js",
+      "React Native",
+      "Tailwind CSS",
+      "Framer Motion",
+      "PWAs",
+    ],
   },
   {
-    label: "Backend",
-    skills: ["Node.js", "Express.js", "Socket.io", "RabbitMQ", "REST APIs"],
+    label: "Backend & Integrations",
+    skills: [
+      "Node.js",
+      "Express.js",
+      "FastAPI",
+      "Pydantic",
+      "REST APIs",
+      "GitHub Apps",
+      "OAuth 2.0",
+      "JWT",
+      "E2B",
+      "WebSockets",
+      "Socket.io",
+      "RabbitMQ",
+      "Razorpay Gateway",
+    ],
   },
   {
-    label: "AI / ML",
-    skills: ["LangChain", "LangGraph", "RAG", "Agents", "Guardrails", "LLM APIs"],
+    label: "AI Engineering",
+    skills: [
+      "Agent Workflows",
+      "LangGraph",
+      "LangChain",
+      "RAG",
+      "Tool Calling",
+      "LLM API Integration",
+      "Prompt Engineering",
+      "AI Observability",
+      "Guardrails",
+    ],
   },
   {
     label: "Databases",
-    skills: ["MongoDB", "PostgreSQL", "Prisma", "Redis"],
+    skills: [
+      "MongoDB",
+      "PostgreSQL",
+      "Drizzle ORM",
+      "Prisma",
+      "Redis",
+    ],
   },
   {
-    label: "DevOps / Cloud",
-    skills: ["Docker", "AWS (EC2, S3)", "Nginx", "GitHub Actions", "Linux", "E2B"],
+    label: "Cloud & DevOps",
+    skills: [
+      "Docker",
+      "AWS EC2",
+      "AWS S3",
+      "Cloudflare R2",
+      "Nginx",
+      "GitHub Actions",
+      "Linux",
+    ],
+  },
+  {
+    label: "Observability",
+    skills: ["PostHog"],
   },
 ];
