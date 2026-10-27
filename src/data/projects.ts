@@ -84,6 +84,101 @@ export const projects: Project[] = [
     },
   },
   {
+    slug: "sargosh",
+    name: "Sargosh",
+    oneLiner:
+      "A Windows dictation app that turns speech into clear text and inserts it into supported apps.",
+    description:
+      "An Electron desktop app with English, Hindi, and Hinglish transcription, AI cleanup, custom shortcuts, and local recording history. Available on Microsoft Store.",
+    status: "shipped",
+    tags: ["Electron", "React", "TypeScript", "Speech Recognition", "LLM Integration", "Fastify"],
+    links: [
+      {
+        label: "Live",
+        href: "https://sargosh.abhinavkarnatak.com/",
+      },
+      {
+        label: "Microsoft Store",
+        href: "https://apps.microsoft.com/detail/9NCB52CT6X88",
+      },
+      {
+        label: "GitHub",
+        href: "https://github.com/abhinavkarnatak-dev/Sargosh-Desktop",
+      },
+    ],
+    caseStudy: {
+      problem: [
+        "Speaking is often easier than typing, but spoken words include pauses, fillers, and corrections. A useful dictation app needs to turn that speech into readable text and put it where the user is working, without making them switch apps and paste it manually.",
+        "I wanted to build that experience for Windows, including people who switch between Hindi and English while speaking.",
+      ],
+      built: [
+        "Sargosh runs in the background with a small floating overlay. Users hold a custom shortcut to dictate, or double-tap it for hands-free recording. When they finish, the app transcribes the recording, cleans up the text, and inserts it into the selected text field.",
+        "The app supports English, Hindi, and Roman-script Hinglish. Cleanup removes fillers, handles spoken corrections, and formats clear lists. Users can replay recordings, copy transcripts, retry transcription, export audio, and view their speaking statistics and remaining allowance.",
+      ],
+      architecture: {
+        description: [
+          "Electron runs the desktop app and overlay, while React and TypeScript handle the interface and recording flow. A bundled Python helper uses Windows APIs to detect shortcuts, track the selected input, and insert the finished text.",
+          "The desktop app sends recordings to a Node.js and Fastify backend on Render. The backend verifies the account, checks usage limits, sends audio to Deepgram, and passes the transcript to an LLM for cleanup. Provider keys stay on the server.",
+          "Supabase handles Google and email OTP login, with PostgreSQL storing account-linked usage records. SQLite and local audio files keep recording history on the user's computer, separated by account.",
+        ],
+      },
+      hardProblems: [
+        {
+          title: "Putting text into the right input",
+          body: [
+            "A user can change text fields while speaking, and clicking the overlay should not replace the intended destination. Sargosh tracks the latest selected input during recording and freezes that destination when recording finishes. If insertion is unavailable, the overlay offers the finished text for copying.",
+          ],
+        },
+        {
+          title: "Keeping repeated dictations reliable",
+          body: [
+            "Text insertion worked on the first attempt but could lose characters during repeated recordings. The Windows helper needed careful handling of shortcut release, keyboard state, focus, and character timing. I tested separate hold and hands-free recordings in different orders to check that users could continue writing in the same input.",
+          ],
+        },
+        {
+          title: "Enforcing limits outside the desktop app",
+          body: [
+            "Cloud transcription and cleanup have a cost, so the backend checks and records usage instead of trusting a counter on the user's computer. The allowance is shared across devices signed into the same account. Setup practice is tracked separately so it does not reduce the regular allowance or add to dictation statistics.",
+          ],
+        },
+        {
+          title: "Getting the app onto another Windows PC",
+          body: [
+            "The first installer worked on my computer but was blocked by a Windows code-integrity policy on another PC. I traced the failure through installation and Windows event logs, then packaged the app as MSIX and published it through Microsoft Store.",
+          ],
+        },
+      ],
+      results: [
+        "Published a Windows desktop app on Microsoft Store, with a separate website explaining the app and guiding users through installation.",
+        "Users can dictate into supported apps through a shortcut without manually copying and pasting the result.",
+        "English, Hindi, and Hinglish share one recording and cleanup flow, including spoken corrections and list formatting.",
+        "Recording history stays local and separate by account, while the backend enforces shared usage limits across devices.",
+      ],
+      stack: [
+        {
+          group: "Desktop & Interface",
+          items: ["Electron", "React", "TypeScript", "MediaRecorder"],
+        },
+        {
+          group: "Speech & AI",
+          items: ["Deepgram", "LLM API Integration"],
+        },
+        {
+          group: "Backend & Data",
+          items: ["Node.js", "Fastify", "Supabase Auth", "PostgreSQL", "SQLite"],
+        },
+        {
+          group: "Windows Integration",
+          items: ["Python", "Windows UI Automation", "MSIX"],
+        },
+        {
+          group: "Hosting & Distribution",
+          items: ["Render", "Vercel", "Microsoft Store"],
+        },
+      ],
+    },
+  },
+  {
     slug: "wakeops",
     name: "WakeOps",
     oneLiner:
@@ -116,8 +211,7 @@ export const projects: Project[] = [
       },
       hardProblems: [
         {
-          title:
-            "A healthy deployment that could not open one more database connection",
+          title: "A healthy deployment that could not open one more database connection",
           body: [
             "Google sign-in started looping back to the login page while the API health check stayed green. The Vercel logs finally showed the real failure: Supabase's session pool had reached its fifteen-client limit. Every serverless instance could create a Prisma client, and reusing one client inside a warm process could not stop multiple processes from holding sessions.",
             "The web deployment moved to Supabase's transaction pooler with a one-connection Prisma limit, while the Prisma client is cached globally inside each warm runtime. That matches the connection model to serverless execution: short requests borrow a pooled connection instead of every function instance trying to own a database session.",
@@ -428,8 +522,7 @@ export const projects: Project[] = [
   {
     slug: "aviageek",
     name: "AviaGeek",
-    oneLiner:
-      "An aircraft model guide for aviation geeks - explore aircraft, model by model.",
+    oneLiner: "An aircraft model guide for aviation geeks - explore aircraft, model by model.",
     description:
       "A Next.js web app for exploring aircraft models: an aviation reference guide with a clean, browsable interface for plane spotters and enthusiasts.",
     status: "shipped",
