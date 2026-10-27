@@ -98,10 +98,6 @@ export const projects: Project[] = [
         href: "https://sargosh.abhinavkarnatak.com/",
       },
       {
-        label: "Microsoft Store",
-        href: "https://apps.microsoft.com/detail/9NCB52CT6X88",
-      },
-      {
         label: "GitHub",
         href: "https://github.com/abhinavkarnatak-dev/Sargosh-Desktop",
       },
